@@ -1,0 +1,18 @@
+# GitHub Repository Information
+
+### 🏷️ Repositoy "About" (Short Description)
+A professional community engagement and request management platform for KenGen, bridging the gap between local communities and liaison officers through streamlined digital workflows and automated status tracking.
+
+### 📝 Repository "Description" (Detailed)
+The KenGen Liaison Portal is a custom-built digital platform designed to modernize the interaction between KenGen (Kenya Electricity Generating Company) and its surrounding host communities. 
+
+The system provides a two-fold solution:
+1. **Public Community Portal**: Allows residents to submit project proposals (e.g., school facilities, church support), water requests (Maji), and complaints, with the ability to track their status using unique request IDs.
+2. **Internal Liaison Dashboard**: Empowers KenGen Liaison Officers to manage the review queue, conduct field assessments, generate reports, and trigger automated SMS notifications to keep stakeholders informed of progress.
+
+Built with a focus on transparency, efficiency, and modern UX, it replaces manual tracking with a robust responsive workflow.
+
+---
+
+### 📄 README.md
+(See the generated README.md file in the project directory)

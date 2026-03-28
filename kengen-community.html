@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KenGen Community Portal — Submit Request</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235D26AF'/%3E%3Cpath d='M18 4l-8 14h7l-1 10 8-14h-7z' fill='white'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body, html { margin:0; padding:0; min-height:100%; font-family: 'Sora', sans-serif; }
+    :root {
+      --accent: #5D26AF;
+      --orange: #FA6400;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+    }
+    body { background: var(--bg); color: var(--text); }
+    .glass { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+    .btn-primary { background: var(--accent); color: white; transition: transform 0.2s, opacity 0.2s; }
+    .btn-primary:active { transform: scale(0.96); }
+    .card-shadow { box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05); }
+    .accent-glow { box-shadow: 0 10px 25px -10px rgba(93,38,175,0.4); }
+    .orange-glow { box-shadow: 0 10px 25px -10px rgba(250,100,0,0.4); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .animate-up { animation: fadeUp 0.5s ease-out forwards; }
+    .hide { display: none !important; }
+    .step-active { background: var(--accent); color: white; }
+    .step-inactive { background: var(--border); color: var(--muted); }
+    input, select, textarea { border: 1px solid var(--border); border-radius: 12px; padding: 12px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    .dot-bg { 
+      background-image: radial-gradient(var(--border) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+  </style>
+</head>
+<body class="dot-bg">
+
+  <!-- Simple Header -->
+  <header class="sticky top-0 z-50 glass border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center btn-primary">
+          <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+        </div>
+        <span class="font-bold text-lg tracking-tight">KenGen <span class="text-slate-500 font-normal">Community</span></span>
+      </div>
+      <button onclick="showHome()" class="text-sm font-semibold flex items-center gap-2 text-slate-600 hover:text-accent transition-colors">
+        <i data-lucide="home" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Home</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8 sm:py-16">
+    
+    <!-- Hero / Home View -->
+    <div id="view-home" class="animate-up">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-accent text-[10px] font-extrabold tracking-widest uppercase mb-4">
+          Official Community Portal
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 mb-6 leading-tight">
+          How can KenGen <br class="sm:hidden"> assist you today?
+        </h1>
+        <p class="text-lg text-slate-600 max-w-xl mx-auto">
+          Submit community requests, water supply needs, or share your feedback directly with our Liaison team.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <button onclick="showView('submit')" class="group p-8 rounded-3xl bg-white border border-slate-200 card-shadow hover:border-accent transition-all text-left accent-glow">
+          <div class="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 group-hover:bg-accent transition-colors">
+            <i data-lucide="plus-circle" class="w-7 h-7 text-accent group-hover:text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Submit New Request</h3>
+          <p class="text-sm text-slate-500 leading-relaxed">Propose a project, request water, or share a concern.</p>
+        </button>
+
+        <button onclick="showView('status')" class="group p-8 rounded-3xl bg-white border border-slate-200 card-shadow hover:border-orange transition-all text-left orange-glow">
+          <div class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center mb-6 group-hover:bg-[#FA6400] transition-colors">
+            <i data-lucide="search" class="w-7 h-7 text-orange group-hover:text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-2">Check Status</h3>
+          <p class="text-sm text-slate-500 leading-relaxed">Track the progress of an existing request using your ID.</p>
+        </button>
+      </div>
+
+      <!-- Quick Info -->
+      <div class="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+        <!-- JS rendered items -->
+        <div id="quick-info" class="contents"></div>
+      </div>
+    </div>
+
+    <!-- Submit View -->
+    <div id="view-submit" class="hide animate-up max-w-xl mx-auto">
+      <button onclick="showHome()" class="flex items-center gap-2 text-slate-400 hover:text-accent text-sm font-bold mb-8 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Home
+      </button>
+
+      <div class="bg-white rounded-3xl border border-slate-200 card-shadow overflow-hidden">
+        <div class="px-8 pt-8 text-center pb-2">
+          <h2 class="text-2xl font-black text-slate-900">New Community Request</h2>
+          <p class="text-sm text-slate-500 mt-2">Fill in the details below to reach our team</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="flex justify-center items-center gap-4 px-8 py-6">
+          <div id="step-1-dot" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs step-active">1</div>
+          <div class="h-[2px] w-8 bg-slate-100 transition-colors" id="step-line"></div>
+          <div id="step-2-dot" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs step-inactive">2</div>
+        </div>
+
+        <form id="submission-form" class="p-8 space-y-6">
+          <!-- Step 1: Type Selection -->
+          <div id="step-1" class="space-y-4">
+            <label class="block text-xs font-black uppercase tracking-widest text-slate-400">What do you need help with?</label>
+            <div id="type-selection" class="space-y-3"></div>
+            <button type="button" id="next-btn" disabled onclick="nextStep()" class="w-full py-4 rounded-2xl bg-slate-100 text-slate-400 font-bold mt-4 disabled:cursor-not-allowed transition-all">
+              Continue
+            </button>
+          </div>
+
+          <!-- Step 2: Contact Info -->
+          <div id="step-2" class="hide space-y-4">
+             <div class="space-y-4" id="dynamic-fields"></div>
+             
+             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div class="space-y-2">
+                 <label class="text-[10px] font-black uppercase text-slate-400">Your Full Name</label>
+                 <input type="text" id="user-name" class="w-full" placeholder="Joseph Kariuki">
+               </div>
+               <div class="space-y-2">
+                 <label class="text-[10px] font-black uppercase text-slate-400">Phone Number (SMS)</label>
+                 <input type="tel" id="user-phone" class="w-full" placeholder="07XX XXX XXX">
+               </div>
+             </div>
+             
+             <div class="space-y-2">
+               <label class="text-[10px] font-black uppercase text-slate-400">Location / Village</label>
+               <input type="text" id="user-location" class="w-full" placeholder="e.g. Olkaria Central">
+             </div>
+
+             <button type="button" onclick="submitFinal()" class="w-full py-4 rounded-2xl btn-primary font-bold accent-glow text-lg mt-6">
+               Submit Request
+             </button>
+             <button type="button" onclick="prevStep()" class="w-full text-sm font-bold text-slate-400 py-2">Go back</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Status View -->
+    <div id="view-status" class="hide animate-up max-w-xl mx-auto">
+      <button onclick="showHome()" class="flex items-center gap-2 text-slate-400 hover:text-accent text-sm font-bold mb-8 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Home
+      </button>
+
+      <div class="bg-white rounded-3xl border border-slate-200 card-shadow p-8 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="search" class="w-8 h-8 text-orange"></i>
+        </div>
+        <h2 class="text-2xl font-black mb-2">Track your Request</h2>
+        <p class="text-sm text-slate-500 mb-8 px-4">Enter your Request ID (e.g. #047) to see the current status of your application.</p>
+        
+        <div class="relative max-w-xs mx-auto mb-6">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-300">#</span>
+          <input type="number" id="lookup-id" class="w-full pl-10 pr-4 py-4 text-xl font-bold tracking-widest text-center" placeholder="000">
+        </div>
+
+        <button onclick="checkStatus()" class="w-full max-w-xs py-4 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all text-lg">
+          Check Status
+        </button>
+
+        <div id="status-result" class="mt-10 hide pt-10 border-t border-slate-100 text-left animate-up"></div>
+      </div>
+    </div>
+
+    <!-- Success Page -->
+    <div id="view-success" class="hide animate-up max-w-xl mx-auto text-center py-20">
+      <div class="w-24 h-24 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-8 relative">
+        <i data-lucide="check" class="w-12 h-12 text-emerald-500"></i>
+        <div class="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-20"></div>
+      </div>
+      <h2 class="text-3xl font-black mb-4">Request Submitted!</h2>
+      <p class="text-slate-500 mb-8">Your request has been sent to the KenGen Liaison team. <br>Please save your Request ID below.</p>
+      
+      <div class="inline-block p-6 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 mb-10">
+        <p class="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-2">Your ID Number</p>
+        <h3 class="text-5xl font-black text-slate-900 mono" id="success-id">#047</h3>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <button onclick="showHome()" class="py-4 rounded-2xl bg-slate-100 font-bold text-slate-600">Home</button>
+        <button onclick="window.print()" class="py-4 rounded-2xl bg-white border border-slate-200 font-bold text-slate-600">Print / Save</button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="py-12 border-t border-slate-200 mt-20 opacity-50">
+    <div class="max-w-5xl mx-auto px-4 text-center">
+      <p class="text-xs font-semibold uppercase tracking-widest mb-4">Kenya Electricity Generating Company PLC</p>
+      <div class="flex justify-center gap-6 mb-6">
+        <i data-lucide="twitter" class="w-4 h-4"></i>
+        <i data-lucide="facebook" class="w-4 h-4"></i>
+        <i data-lucide="instagram" class="w-4 h-4"></i>
+      </div>
+      <p class="text-[10px]">&copy; 2026 KenGen. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ─── STATE ─────────────────────────────────────────
+    let currentStep = 1;
+    let requestType = '';
+    const mockRequests = [
+      { id: '1', name: 'James Kariuki', status: 'Approved', info: 'Water Truck scheduled for Mar 25.' },
+      { id: '2', name: 'Mary Wanjiku', status: 'Under Review', info: 'Site visit required for church roof assessment.' },
+      { id: '12', name: 'James Mwangi', status: 'Pending', info: 'Your request is in the queue.' }
+    ];
+
+    // ─── INITIAL RENDER ───────────────────────────────
+    function init() {
+      // Render Request Types
+      const types = [
+        ['church','Church / Community','Project proposals, facility repairs','church'],
+        ['droplets','Water (Maji)','Domestic or industrial water needs','water'],
+        ['alert-triangle','Complaint / Feedback','Operational or environmental concerns','complaint']
+      ];
+      document.getElementById('type-selection').innerHTML = types.map(([icon,title,desc,id])=>`
+        <label class="relative block cursor-pointer group">
+          <input type="radio" name="req_type" value="${id}" class="peer absolute opacity-0" onchange="enableNext()">
+          <div class="flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-100 peer-checked:border-accent peer-checked:bg-indigo-50 transition-all group-hover:border-slate-200">
+            <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center peer-checked:bg-white transition-colors">
+              <i data-lucide="${icon}" class="w-5 h-5 text-slate-400 transition-colors"></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-bold text-sm text-slate-900">${title}</p>
+              <p class="text-[10px] text-slate-500">${desc}</p>
+            </div>
+          </div>
+        </label>`).join('');
+
+      // Render Quick Info
+      const info = [
+        ['clock','24/7 Access','Submit requests anytime, anywhere.'],
+        ['shield-check','Official Portal','Secure and direct to KenGen Liaison.'],
+        ['message-square','Fast Feedback','Receive updates on your phone.']
+      ];
+      document.getElementById('quick-info').innerHTML = info.map(([icon,title,desc])=>`
+        <div class="flex flex-col items-center">
+          <div class="w-10 h-10 flex items-center justify-center text-slate-400 mb-3">
+            <i data-lucide="${icon}" class="w-6 h-6"></i>
+          </div>
+          <h4 class="font-bold text-sm mb-1">${title}</h4>
+          <p class="text-xs text-slate-500">${desc}</p>
+        </div>`).join('');
+      
+      lucide.createIcons();
+    }
+
+    // ─── NAVIGATION ────────────────────────────────────
+    function showView(v) {
+      ['home','submit','status','success'].forEach(id => {
+        document.getElementById(`view-${id}`).classList.add('hide');
+      });
+      document.getElementById(`view-${v}`).classList.remove('hide');
+      lucide.createIcons();
+      window.scrollTo(0,0);
+    }
+
+    function showHome() { showView('home'); currentStep = 1; updateStepUI(); }
+
+    function enableNext() {
+      const btn = document.getElementById('next-btn');
+      btn.disabled = false;
+      btn.classList.add('btn-primary','accent-glow');
+      btn.classList.remove('bg-slate-100','text-slate-400');
+    }
+
+    function nextStep() {
+      requestType = document.querySelector('input[name="req_type"]:checked').value;
+      currentStep = 2;
+      updateStepUI();
+      renderDynamicFields(requestType);
+    }
+
+    function prevStep() {
+      currentStep = 1;
+      updateStepUI();
+    }
+
+    function updateStepUI() {
+      const s1 = document.getElementById('step-1');
+      const s2 = document.getElementById('step-2');
+      const d1 = document.getElementById('step-1-dot');
+      const d2 = document.getElementById('step-2-dot');
+      const line = document.getElementById('step-line');
+
+      if (currentStep === 1) {
+        s1.classList.remove('hide'); s2.classList.add('hide');
+        d2.classList.replace('step-active','step-inactive');
+        line.classList.replace('bg-accent','bg-slate-100');
+      } else {
+        s1.classList.add('hide'); s2.classList.remove('hide');
+        d2.classList.replace('step-inactive','step-active');
+        line.classList.replace('bg-slate-100','bg-accent');
+      }
+    }
+
+    function renderDynamicFields(type) {
+      const area = document.getElementById('dynamic-fields');
+      const fields = {
+        church: { label: 'Project Name / Details', placeholder: 'e.g. Church Roof Repair' },
+        water: { label: 'How many Liters do you need?', placeholder: 'e.g. 5000' },
+        complaint: { label: 'Describe your complaint', placeholder: 'Explain what happened...' }
+      };
+      
+      area.innerHTML = `
+        <div class="space-y-2">
+          <label class="text-[10px] font-black uppercase text-slate-400">${fields[type].label}</label>
+          ${type === 'complaint' ? 
+            `<textarea id="user-details" class="w-full" rows="4" placeholder="${fields[type].placeholder}"></textarea>` : 
+            `<input type="${type==='water'?'number':'text'}" id="user-details" class="w-full" placeholder="${fields[type].placeholder}">`
+          }
+        </div>
+      `;
+    }
+
+    function submitFinal() {
+      const name = document.getElementById('user-name').value;
+      if (!name) return alert('Please enter your name');
+      const newId = Math.floor(Math.random() * 900) + 100;
+      document.getElementById('success-id').innerText = '#' + newId;
+      showView('success');
+    }
+
+    function checkStatus() {
+      const id = document.getElementById('lookup-id').value;
+      const res = document.getElementById('status-result');
+      if (!id) return;
+      
+      const found = mockRequests.find(r => r.id === id);
+      res.classList.remove('hide');
+      
+      if (found) {
+        const colors = { Approved: 'bg-emerald-50 text-emerald-600', Pending: 'bg-orange-50 text-orange-600', 'Under Review': 'bg-blue-50 text-blue-600' };
+        res.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold text-slate-400">Request #${id}</span>
+            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[found.status] || 'bg-slate-100 text-slate-500'}">${found.status}</span>
+          </div>
+          <h4 class="font-bold text-lg mb-2">${found.name}</h4>
+          <p class="text-sm text-slate-600 pb-4">${found.info}</p>
+          <div class="p-4 rounded-2xl bg-slate-50 flex items-center gap-3">
+             <i data-lucide="info" class="w-4 h-4 text-slate-400"></i>
+             <p class="text-[10px] text-slate-500">Updates are sent via SMS to your phone.</p>
+          </div>
+        `;
+      } else {
+        res.innerHTML = `<div class="p-6 rounded-2xl bg-red-50 text-red-600 text-center"><p class="font-bold">Request Not Found</p></div>`;
+      }
+      lucide.createIcons();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

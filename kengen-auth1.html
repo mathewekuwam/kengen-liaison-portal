@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KenGen Liaison — Sign In</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231B6CF2'/%3E%3Cpath d='M18 4l-8 14h7l-1 10 8-14h-7z' fill='white'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body, html { margin: 0; padding: 0; min-height: 100%; font-family: 'Sora', sans-serif; }
+    .hide { display: none !important; }
+
+    :root {
+      --accent:      #1B6CF2;
+      --accent-ring: rgba(27,108,242,0.22);
+      --accent-dim:  #06122a;
+      --orange:      #FA6400;
+      --bg:          #070d1a;
+      --surface:     #0c1526;
+      --surface2:    #101e34;
+      --border:      #1e3050;
+      --border2:     #263d60;
+      --text:        #ddeaff;
+      --text-sec:    #8aaad0;
+      --muted:       #4d6e90;
+      --red:         #f87171; --red-bg: #1e0808; --red-border: #4a1010;
+      --green:       #4ade80; --green-bg: #041e10; --green-border: #0d3a1e;
+    }
+    :root[data-theme="light"] {
+      --accent:      #1B6CF2;
+      --accent-ring: rgba(27,108,242,0.15);
+      --accent-dim:  #eff6ff;
+      --orange:      #FA6400;
+      --bg:          #f0f6ff;
+      --surface:     #ffffff;
+      --surface2:    #f5f9ff;
+      --border:      #ccdcf8;
+      --border2:     #b8cff0;
+      --text:        #0a1628;
+      --text-sec:    #2c4872;
+      --muted:       #4a6890;
+      --red:         #dc2626; --red-bg: #fef2f2; --red-border: #fecaca;
+      --green:       #16a34a; --green-bg: #f0fdf4; --green-border: #bbf7d0;
+    }
+
+    body { background: var(--bg); color: var(--text); transition: background .25s, color .25s; }
+    .mono { font-family: 'Space Mono', monospace; }
+
+    /* ── LEFT PANEL ──────────────────────────────────────────────────── */
+    .left-panel {
+      background: linear-gradient(160deg, #0a1e4a 0%, #071230 50%, #0a1a3c 100%);
+      position: relative; overflow: hidden;
+    }
+    .left-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(27,108,242,0.12) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(70px); pointer-events: none;
+    }
+    .orb-blue   { background: #1B6CF2; width: 400px; height: 400px; top:-80px; right:-80px; opacity:.18; }
+    .orb-orange { background: #FA6400; width: 300px; height: 300px; bottom:-60px; left:-60px; opacity:.15; }
+
+    :root[data-theme="light"] .left-panel {
+      background: linear-gradient(160deg, #1B6CF2 0%, #1450c0 60%, #0e3fa0 100%);
+    }
+
+    /* ── FORM CARD ───────────────────────────────────────────────────── */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+    }
+    :root[data-theme="light"] .form-card {
+      box-shadow: 0 24px 60px rgba(27,108,242,0.10);
+    }
+
+    input, select {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); outline: none;
+      font-family: 'Sora', sans-serif; font-size: 13px;
+      border-radius: 10px; transition: border-color .18s, box-shadow .18s;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+    }
+    input::placeholder { color: var(--muted); }
+    select option { background: var(--surface2); }
+
+    .btn-primary {
+      width: 100%; padding: 13px;
+      background: var(--accent); color: white;
+      font-size: 14px; font-weight: 800;
+      border: none; border-radius: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 6px 20px rgba(27,108,242,0.35);
+      transition: all .18s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(27,108,242,0.45); }
+
+    .divider { position:relative; text-align:center; margin:20px 0; }
+    .divider::before { content:''; position:absolute; top:50%; left:0; right:0; height:1px; background:var(--border); }
+    .divider span { position:relative; padding:0 12px; font-size:10px; font-weight:700; letter-spacing:.08em; background:var(--surface); color:var(--muted); }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .card-animate { animation: fadeUp .35s ease-out forwards; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse-dot { 0%,100%{opacity:1;}50%{opacity:.3;} }
+
+    .theme-toggle {
+      display:flex; align-items:center; gap:6px;
+      padding:5px 12px; border-radius:99px;
+      cursor:pointer; font-size:11px; font-weight:700;
+      border:1px solid var(--border); background:var(--surface2);
+      color:var(--muted); transition:all .2s;
+    }
+    .theme-toggle:hover { border-color:var(--accent); color:var(--accent); }
+
+    .stat-chip {
+      display:flex; flex-direction:column; align-items:center; gap:2px;
+      padding:14px 20px; border-radius:14px;
+      background:rgba(27,108,242,0.08); border:1px solid rgba(27,108,242,0.18);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── HEADER ──────────────────────────────────────────────────────── -->
+  <header style="position:fixed;top:0;left:0;right:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--border);">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <div style="width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="zap" style="width:15px;height:15px;color:white;"></i>
+        </div>
+        <div style="line-height:1">
+          <span style="font-weight:900;font-size:14px;color:var(--text);">KenGen</span>
+          <span style="font-weight:400;font-size:14px;color:var(--muted);"> Liaison</span>
+        </div>
+      </a>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onclick="toggleTheme()" class="theme-toggle" id="theme-btn">
+          <i data-lucide="moon" id="icon-moon" style="width:13px;height:13px;"></i>
+          <i data-lucide="sun"  id="icon-sun"  class="hide" style="width:13px;height:13px;"></i>
+          <span id="theme-label">Dark</span>
+        </button>
+        <div id="nav-register-link">
+          <a href="#" onclick="showView('register');return false;" style="font-size:12px;font-weight:800;color:white;text-decoration:none;padding:7px 16px;border-radius:10px;background:var(--accent);box-shadow:0 4px 14px rgba(27,108,242,0.35);">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── MAIN SPLIT ───────────────────────────────────────────────────── -->
+  <div style="min-height:100vh;padding-top:56px;display:grid;grid-template-columns:1fr 1fr;">
+
+    <!-- LEFT PANEL — branding -->
+    <div class="left-panel hidden lg:flex flex-col justify-between p-12">
+      <div class="orb orb-blue"></div>
+      <div class="orb orb-orange"></div>
+      <div style="position:relative;z-index:1;">
+        <!-- Logo -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:64px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:rgba(27,108,242,0.3);border:1px solid rgba(27,108,242,0.4);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="zap" style="width:24px;height:24px;color:#60a5fa;"></i>
+          </div>
+          <div>
+            <p style="font-size:22px;font-weight:900;color:#fff;line-height:1.1;">KenGen</p>
+            <p style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:500;">Liaison Portal</p>
+          </div>
+        </div>
+        <!-- Headline -->
+        <h1 style="font-size:38px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:16px;">
+          Powering<br>Community<br><span style="color:#FA6400;">Partnerships.</span>
+        </h1>
+        <p style="font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7;max-width:340px;">
+          KenGen's Liaison Portal connects communities to Kenya's largest geothermal power company — managing requests, water, and feedback in one place.
+        </p>
+        <!-- Stats -->
+        <div style="display:flex;gap:12px;margin-top:48px;">
+          <div class="stat-chip">
+            <span style="font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:#fff;">47+</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.45);font-weight:700;letter-spacing:.08em;">REQUESTS</span>
+          </div>
+          <div class="stat-chip">
+            <span style="font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:#fff;">5</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.45);font-weight:700;letter-spacing:.08em;">STATIONS</span>
+          </div>
+          <div class="stat-chip">
+            <span style="font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:#fff;">98%</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.45);font-weight:700;letter-spacing:.08em;">RESOLVED</span>
+          </div>
+        </div>
+      </div>
+      <!-- Footer note -->
+      <div style="position:relative;z-index:1;display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:pulse-dot 2s ease infinite;"></div>
+        <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;">Kenya Electricity Generating Company PLC</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL — form -->
+    <div style="display:flex;align-items:center;justify-content:center;padding:40px 24px;background:var(--bg);">
+      <div style="width:100%;max-width:400px;" id="auth-container"></div>
+    </div>
+  </div>
+
+  <div id="toast-container" style="position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none;"></div>
+
+  <script>
+    // ─── THEME ─────────────────────────────────────────────────────────────
+    let currentTheme = localStorage.getItem('kgTheme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    function updateThemeBtn() {
+      const moon  = document.getElementById('icon-moon');
+      const sun   = document.getElementById('icon-sun');
+      const label = document.getElementById('theme-label');
+      if (currentTheme === 'light') { moon.classList.add('hide'); sun.classList.remove('hide'); if(label) label.innerText='Light'; }
+      else { sun.classList.add('hide'); moon.classList.remove('hide'); if(label) label.innerText='Dark'; }
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('kgTheme', currentTheme);
+      updateThemeBtn();
+    }
+
+    // ─── TOAST ─────────────────────────────────────────────────────────────
+    function toast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      const styles = { success:'background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)', error:'background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)' };
+      el.style.cssText = styles[type]||styles.error;
+      el.style.cssText += ';padding:12px 16px;border-radius:12px;font-size:12px;font-weight:700;pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)';
+      el.innerText = msg;
+      c.appendChild(el);
+      setTimeout(()=>el.remove(), 3500);
+    }
+
+    // ─── VIEWS ─────────────────────────────────────────────────────────────
+    function showView(v) {
+      document.getElementById('nav-register-link').style.display = v==='register' ? 'none' : '';
+      if (v==='login')    renderLogin();
+      if (v==='register') renderRegister();
+    }
+
+    function renderLogin() {
+      document.getElementById('auth-container').innerHTML = `
+        <div class="card-animate">
+          <!-- Heading -->
+          <div style="margin-bottom:28px;">
+            <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:rgba(27,108,242,0.1);border:1px solid rgba(27,108,242,0.2);margin-bottom:16px;">
+              <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse-dot 1.5s ease infinite;display:inline-block;"></span>
+              <span style="font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--accent);">LIAISON PORTAL</span>
+            </div>
+            <h1 style="font-size:26px;font-weight:900;color:var(--text);margin:0 0 6px;">Welcome back</h1>
+            <p style="font-size:13px;color:var(--muted);margin:0;">Sign in to manage community requests</p>
+          </div>
+
+          <div class="form-card" style="padding:28px;">
+            <form onsubmit="handleLogin(event)" style="display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <label style="display:block;font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--muted);margin-bottom:7px;text-transform:uppercase;">Email / Staff ID</label>
+                <div style="position:relative;">
+                  <i data-lucide="user" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none;"></i>
+                  <input id="login-email" type="text" placeholder="officer@kengen.co.ke" required style="width:100%;padding:12px 14px 12px 38px;">
+                </div>
+              </div>
+              <div>
+                <label style="display:block;font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--muted);margin-bottom:7px;text-transform:uppercase;">Password</label>
+                <div style="position:relative;">
+                  <i data-lucide="lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none;"></i>
+                  <input id="login-pw" type="password" placeholder="••••••••••" required style="width:100%;padding:12px 40px 12px 38px;">
+                  <button type="button" id="eye-l" onclick="toggleEye('login-pw','eye-l')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;">
+                    <i data-lucide="eye" style="width:14px;height:14px;"></i>
+                  </button>
+                </div>
+              </div>
+              <button type="submit" id="login-btn" class="btn-primary" style="margin-top:4px;">
+                <i data-lucide="log-in" style="width:16px;height:16px;"></i> Sign In
+              </button>
+            </form>
+            <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:18px;">
+              New officer? <a href="#" onclick="showView('register');return false;" style="color:var(--accent);font-weight:800;text-decoration:none;">Request access →</a>
+            </p>
+            <div class="divider"><span>OR</span></div>
+            <a href="kengen-community.html" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:12px;background:rgba(250,100,0,0.08);border:1px solid rgba(250,100,0,0.20);color:var(--orange);font-size:12px;font-weight:800;text-decoration:none;transition:all .2s;">
+              <i data-lucide="users" style="width:14px;height:14px;"></i> Community Request Portal →
+            </a>
+          </div>
+
+          <div style="display:flex;justify-content:center;gap:20px;margin-top:20px;flex-wrap:wrap;">
+            ${[['shield-check','Secure Portal'],['zap','KenGen Official'],['users','Community Focused']].map(([ic,lb])=>`
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);">
+                <i data-lucide="${ic}" style="width:12px;height:12px;color:var(--accent);"></i>${lb}
+              </div>`).join('')}
+          </div>
+        </div>`;
+      lucide.createIcons();
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      btn.style.opacity='.7'; btn.style.pointerEvents='none';
+      btn.innerHTML=`<i data-lucide="loader" style="width:16px;height:16px;animation:spin .8s linear infinite;"></i> Signing in…`;
+      lucide.createIcons();
+      setTimeout(()=>{ window.location.href='kengen-dashboard.html'; }, 1200);
+    }
+
+    function renderRegister() {
+      document.getElementById('auth-container').innerHTML = `
+        <div class="card-animate">
+          <div style="margin-bottom:28px;">
+            <h1 style="font-size:26px;font-weight:900;color:var(--text);margin:0 0 6px;">Request Access</h1>
+            <p style="font-size:13px;color:var(--muted);margin:0;">Register as a KenGen Liaison Officer</p>
+          </div>
+          <div class="form-card" style="padding:28px;">
+            <form onsubmit="handleRegister(event)" style="display:flex;flex-direction:column;gap:14px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <label style="display:block;font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">First Name</label>
+                  <input id="r-fn" type="text" placeholder="James" style="width:100%;padding:11px 12px;">
+                </div>
+                <div>
+                  <label style="display:block;font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Last Name</label>
+                  <input id="r-ln" type="text" placeholder="Mwangi" style="width:100%;padding:11px 12px;">
+                </div>
+              </div>
+              <div>
+                <label style="display:block;font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Work Email</label>
+                <div style="position:relative;">
+                  <i data-lucide="mail" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none;"></i>
+                  <input id="r-email" type="email" placeholder="officer@kengen.co.ke" style="width:100%;padding:11px 14px 11px 38px;">
+                </div>
+              </div>
+              <div>
+                <label style="display:block;font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Department</label>
+                <select id="r-dept" style="width:100%;padding:11px 14px;">
+                  <option>Community Affairs</option><option>Environmental Affairs</option>
+                  <option>Corporate Social Responsibility</option><option>Operations</option><option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Password</label>
+                <div style="position:relative;">
+                  <i data-lucide="lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none;"></i>
+                  <input id="r-pw" type="password" placeholder="Create a strong password" style="width:100%;padding:11px 14px 11px 38px;">
+                </div>
+              </div>
+              <button type="submit" class="btn-primary" style="margin-top:6px;">
+                <i data-lucide="user-check" style="width:16px;height:16px;"></i> Create Account
+              </button>
+            </form>
+            <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px;">
+              Already have an account? <a href="#" onclick="showView('login');return false;" style="color:var(--accent);font-weight:800;text-decoration:none;">Sign in →</a>
+            </p>
+          </div>
+        </div>`;
+      lucide.createIcons();
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      toast('Account created! Redirecting…','success');
+      setTimeout(()=>{ window.location.href='kengen-dashboard.html'; },1200);
+    }
+
+    function toggleEye(inputId, btnId) {
+      const inp = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      if (!inp) return;
+      const shown = inp.type==='text';
+      inp.type = shown?'password':'text';
+      btn.innerHTML = shown?`<i data-lucide="eye" style="width:14px;height:14px;"></i>`:`<i data-lucide="eye-off" style="width:14px;height:14px;"></i>`;
+      lucide.createIcons();
+    }
+
+    window.onload = () => { updateThemeBtn(); showView('login'); };
+
+    const style = document.createElement('style');
+    style.textContent = `@keyframes spin{to{transform:rotate(360deg);}}@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.3;}}@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}`;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

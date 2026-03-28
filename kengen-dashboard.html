@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KenGen Liaison — Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235D26AF'/%3E%3Cpath d='M18 4l-8 14h7l-1 10 8-14h-7z' fill='white'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Sora', sans-serif; }
+    .hide { display: none !important; }
+    :root {
+      --accent: #5D26AF;
+      --accent-dim: #0d0a1a;
+      --bg: #0a0d0b;
+      --surface: #101510;
+      --surface2: #161e18;
+      --border: #1a2b1e;
+      --text: #e2ede4;
+      --muted: #4d7057;
+      --muted-light: #86a98e;
+      --green: #22c55e; --green-bg: #052e16; --green-border: #14532d;
+      --red: #ef4444; --red-bg: #1c0a0a; --red-border: #7f1d1d;
+      --amber: #f59e0b; --amber-bg: #1c1407; --amber-border: #78350f;
+      --blue: #3b82f6; --blue-bg: #0c1a2e; --blue-border: #1e3a5f;
+      --gray-bg: #111827; --gray-border: #1f2937;
+      --chart-grid: #1a2b1e;
+      --chart-theme: dark;
+    }
+    :root[data-theme="light"] {
+      --accent: #5D26AF;
+      --accent-dim: #f5f3ff;
+      --bg: #f4faf6;
+      --surface: #ffffff;
+      --surface2: #f0fdf4;
+      --border: #d1fae5;
+      --text: #0f2414;
+      --muted: #5a7a62;
+      --muted-light: #4d7057;
+      --green: #15803d; --green-bg: #f0fdf4; --green-border: #bbf7d0;
+      --red: #dc2626; --red-bg: #fef2f2; --red-border: #fecaca;
+      --amber: #d97706; --amber-bg: #fffbeb; --amber-border: #fde68a;
+      --blue: #2563eb; --blue-bg: #eff6ff; --blue-border: #bfdbfe;
+      --gray-bg: #f8fafc; --gray-border: #e2e8f0;
+      --chart-grid: #d1fae5;
+      --chart-theme: light;
+    }
+    body { background: var(--bg); color: var(--text); }
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .page-animate { animation: fadeUp .28s ease-out forwards; }
+    @keyframes slideIn { from { transform:translateX(110%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+    .toast-animate { animation: slideIn .25s ease-out forwards; }
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+    .mono { font-family: 'Space Mono', monospace; }
+    .accent-glow { box-shadow: 0 0 24px rgba(93,38,175,0.3); }
+    .nav-active { background: linear-gradient(135deg,#5D26AF15,#5D26AF05); border:1px solid #5D26AF30; color:var(--accent) !important; }
+    .nav-active i { color: var(--accent) !important; }
+    input, select, textarea { background:var(--surface2); border:1px solid var(--border); color:var(--text); outline:none; font-family:'Sora',sans-serif; transition:border-color .2s; }
+    input:focus, select:focus, textarea:focus { border-color:var(--accent); }
+    input::placeholder, textarea::placeholder { color:var(--muted); }
+    select option { background:var(--surface2); }
+    .progress-bar { background:linear-gradient(90deg,var(--accent),#4ade80); border-radius:99px; height:3px; }
+    .tag-pill { display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:99px;font-size:10px;font-weight:700;background:var(--surface2);color:var(--muted-light);border:1px solid var(--border); }
+    .type-card { border:2px solid var(--border); border-radius:18px; padding:20px; cursor:pointer; transition:all .2s; background:var(--surface2); }
+    .type-card:hover, .type-card.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .type-card.selected .type-icon { background:var(--accent); }
+    .type-card.selected .type-icon i { color:white !important; }
+  </style>
+</head>
+<body>
+<div class="flex flex-col h-screen overflow-hidden">
+
+  <!-- Header -->
+  <header style="background:var(--surface);border-bottom:1px solid var(--border);" class="flex-shrink-0 z-30">
+    <div class="px-5 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+          <i data-lucide="menu" class="w-4 h-4" style="color:var(--muted)"></i>
+        </button>
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:var(--accent)">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-white"></i>
+          </div>
+          <div class="hidden sm:block">
+            <span class="font-bold text-sm" style="color:var(--text)">KenGen</span>
+            <span class="font-normal text-sm" style="color:var(--muted)"> Liaison</span>
+          </div>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 ml-1">
+          <span style="color:var(--border);font-size:18px">|</span>
+          <span id="current-page-label" class="text-xs font-semibold" style="color:var(--muted)">Dashboard</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- Stats badge -->
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:var(--surface2);border:1px solid var(--border)">
+          <i data-lucide="inbox" class="w-3.5 h-3.5" style="color:var(--accent)"></i>
+          <span class="mono text-xs font-bold" style="color:var(--accent)" id="pending-badge">12</span>
+          <span class="text-xs" style="color:var(--muted)">pending</span>
+        </div>
+        <!-- Theme -->
+        <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-white/5 transition-colors">
+          <i data-lucide="sun" class="w-4 h-4 hide" id="icon-sun" style="color:var(--muted)"></i>
+          <i data-lucide="moon" class="w-4 h-4" id="icon-moon" style="color:var(--muted)"></i>
+        </button>
+        <!-- Notifs -->
+        <button class="p-2 rounded-lg hover:bg-white/5 transition-colors relative">
+          <i data-lucide="bell" class="w-4 h-4" style="color:var(--muted)"></i>
+          <span class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 text-white text-[8px] font-black rounded-full flex items-center justify-center" style="background:var(--accent)">3</span>
+        </button>
+        <!-- Avatar -->
+        <div class="flex items-center gap-2 pl-3" style="border-left:1px solid var(--border)">
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-black" style="background:var(--accent)">JM</div>
+          <div class="hidden md:block">
+            <p class="text-[11px] font-bold leading-none" style="color:var(--text)">James Mwangi</p>
+            <p class="text-[9px] leading-none mt-0.5" style="color:var(--muted)">Liaison Officer</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden relative">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-16 lg:w-56 flex-shrink-0 flex flex-col transition-all duration-300 z-20 overflow-hidden no-scrollbar" style="background:var(--surface);border-right:1px solid var(--border)">
+      <div class="p-3 flex-1 overflow-y-auto no-scrollbar">
+        <div id="nav-items" class="space-y-0.5 mb-4"></div>
+        <div>
+          <p id="sidebar-lbl-cfg" class="hidden lg:block text-[9px] font-black uppercase tracking-[0.15em] px-2 mb-2" style="color:var(--muted)">Config</p>
+          <div id="nav-settings" class="space-y-0.5"></div>
+        </div>
+      </div>
+      <div class="p-3 border-t" style="border-color:var(--border)">
+        <div class="hidden lg:block">
+          <div class="flex justify-between mb-1">
+            <span class="text-[9px] font-bold" style="color:var(--muted)">REQUESTS THIS MONTH</span>
+            <span class="mono text-[9px]" style="color:var(--accent)">47</span>
+          </div>
+          <div class="w-full rounded-full h-1" style="background:var(--border)">
+            <div class="progress-bar" style="width:62%"></div>
+          </div>
+          <p class="text-[9px] mt-1" style="color:var(--muted)">47 / 75 capacity</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 flex flex-col overflow-hidden" style="background:var(--bg)">
+      <div id="main-content" class="flex-1 overflow-y-auto p-5 no-scrollbar page-animate"></div>
+    </main>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/70 z-10 hide lg:!hidden"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-container" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hide" style="background:rgba(0,0,0,0.8);backdrop-filter:blur(4px)">
+  <div id="modal-content" class="w-full max-w-lg rounded-2xl overflow-hidden page-animate" style="background:var(--surface);border:1px solid var(--border)"></div>
+</div>
+
+<!-- Confirm -->
+<div id="confirm-container" class="fixed inset-0 z-[110] flex items-center justify-center p-4 hide" style="background:rgba(0,0,0,0.8);backdrop-filter:blur(4px)">
+  <div id="confirm-content" class="w-full max-w-sm p-6 rounded-2xl text-center page-animate" style="background:var(--surface);border:1px solid var(--border)"></div>
+</div>
+
+<!-- Toasts -->
+<div id="toast-container" class="fixed bottom-5 right-5 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+<script>
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let activeNav = 'dashboard';
+let sidebarOpen = false;
+let filterType = 'all';
+let filterStatus = 'all';
+
+const mainNav = [
+  { id:'dashboard', label:'Dashboard',          icon:'layout-dashboard' },
+  { id:'submit',    label:'Submit Request',      icon:'plus-circle',   badge:'New' },
+  { id:'all',       label:'All Requests',        icon:'inbox' },
+  { id:'church',    label:'Church / Community',  icon:'church' },
+  { id:'water',     label:'Water Requests',      icon:'droplets' },
+  { id:'complaints',label:'Complaints',          icon:'alert-triangle' },
+  { id:'reports',   label:'Reports',             icon:'bar-chart-2' },
+];
+const settingsNav = [
+  { id:'settings', label:'Settings', icon:'settings' },
+];
+
+// ─── SAMPLE DATA ────────────────────────────────────────────────────────────
+let requests = [
+  { id:1,  type:'church',    name:'Pastor James Waweru',   date:'Mar 1, 2026',  project:'Church Roof Repair',          budget:250000, location:'Olkaria, Naivasha',    status:'Approved',      notes:'Urgent — rainy season approaching' },
+  { id:2,  type:'water',     name:'Mary Njeri',            date:'Mar 3, 2026',  liters:5000,  transport:'Water Truck',  location:'Eburru, Nakuru',          status:'Pending',       notes:'For domestic use' },
+  { id:3,  type:'church',    name:'Rev. Peter Kamau',      date:'Mar 4, 2026',  project:'Toilets in Kamunge School',   budget:180000, location:'Kinangop, Nyandarua',  status:'Under Review',  notes:'' },
+  { id:4,  type:'water',     name:'Fatuma Omar',           date:'Mar 5, 2026',  liters:10000, transport:'Pipeline',    location:'Olkaria III, Naivasha',   status:'Approved',      notes:'Industrial cooling' },
+  { id:5,  type:'complaint', name:'John Kariuki',          date:'Mar 5, 2026',  category:'Noise Pollution',            location:'Menengai, Nakuru',        status:'Pending',       description:'Geothermal plant noise at night disturbs residents' },
+  { id:6,  type:'church',    name:'Bishop Grace Mutua',    date:'Mar 6, 2026',  project:'Community Hall Construction', budget:450000, location:'Suswa, Narok',         status:'Pending',       notes:'200 beneficiaries' },
+  { id:7,  type:'water',     name:'Samuel Ng\'ang\'a',     date:'Mar 6, 2026',  liters:2000,  transport:'Donkey Cart', location:'Hell\'s Gate, Naivasha',  status:'Rejected',      notes:'Area outside service zone' },
+  { id:8,  type:'complaint', name:'Esther Achieng',        date:'Mar 7, 2026',  category:'Environmental Damage',       location:'Olkaria II, Naivasha',    status:'Under Review',  description:'Pipeline leak affecting farmland' },
+  { id:9,  type:'church',    name:'Deacon Moses Maina',    date:'Mar 8, 2026',  project:'Borehole for School',         budget:320000, location:'Kinangop, Nyandarua',  status:'Approved',      notes:'Joint project with MoE' },
+  { id:10, type:'water',     name:'Rahel Tesfaye',         date:'Mar 8, 2026',  liters:8000,  transport:'Water Truck', location:'Longonot, Nakuru',        status:'Pending',       notes:'Emergency — drought' },
+];
+let nextId = 11;
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function statusBadge(status) {
+  const map = {
+    'Approved':     'color:var(--green);background:var(--green-bg);border:1px solid var(--green-border)',
+    'Pending':      'color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber-border)',
+    'Under Review': 'color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-border)',
+    'Rejected':     'color:var(--red);background:var(--red-bg);border:1px solid var(--red-border)',
+  };
+  const s = map[status] || 'color:var(--muted);background:var(--gray-bg);border:1px solid var(--gray-border)';
+  return `<span style="${s};font-size:9px;font-weight:800;padding:2px 8px;border-radius:99px;letter-spacing:.05em">${status.toUpperCase()}</span>`;
+}
+
+function typeBadge(type) {
+  const map = {
+    'church':    ['#5D26AF','#0d0a1a','#3b1f82','Church/Community'],
+    'water':     ['#FA6400','#1a0d05','#78350f','Water (Maji)'],
+    'complaint': ['#ef4444','#1c0a0a','#7f1d1d','Complaint'],
+  };
+  const [col, bg, bdr, lbl] = map[type] || ['var(--muted)','var(--gray-bg)','var(--gray-border)','Other'];
+  return `<span style="color:${col};background:${bg};border:1px solid ${bdr};font-size:9px;font-weight:800;padding:2px 8px;border-radius:99px;letter-spacing:.05em">${lbl.toUpperCase()}</span>`;
+}
+
+function fmtBudget(n) { return `KSh ${Number(n).toLocaleString()}`; }
+
+// ─── SIDEBAR ────────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (sidebarOpen) {
+    sidebar.classList.remove('w-16'); sidebar.classList.add('w-56','fixed','lg:static','inset-y-0','left-0');
+    overlay.classList.remove('hide');
+  } else {
+    sidebar.classList.remove('w-56','fixed','lg:static','inset-y-0','left-0'); sidebar.classList.add('w-16');
+    overlay.classList.add('hide');
+  }
+  renderNav();
+}
+
+function renderNav() {
+  renderNavGroup('nav-items', mainNav);
+  renderNavGroup('nav-settings', settingsNav);
+}
+
+function renderNavGroup(id, items) {
+  const c = document.getElementById(id); if (!c) return;
+  const show = sidebarOpen;
+  c.innerHTML = items.map(item => {
+    const active = activeNav === item.id;
+    const badgeHtml = item.badge ? `<span style="background:#FA6400;color:white;font-size:8px;font-weight:900;padding:1px 5px;border-radius:99px;margin-left:auto">${item.badge}</span>` : '';
+    return `<button onclick="navigateTo('${item.id}')" class="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl transition-all duration-150 group ${active?'nav-active':''}" style="${active?'':'color:var(--muted)'}">
+      <i data-lucide="${item.icon}" class="w-4 h-4 flex-shrink-0" style="${active?'color:var(--accent)':''}"></i>
+      <span class="text-xs font-semibold truncate transition-opacity ${show?'opacity-100':'opacity-0 lg:opacity-100'}">${item.label}</span>
+      ${show ? badgeHtml : ''}
+    </button>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function navigateTo(id) {
+  activeNav = id;
+  const all = [...mainNav,...settingsNav];
+  document.getElementById('current-page-label').innerText = all.find(n=>n.id===id)?.label || id;
+  if (window.innerWidth < 1024 && sidebarOpen) toggleSidebar();
+  renderNav();
+  renderPage();
+}
+
+// ─── TOAST / MODAL ──────────────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const container = document.getElementById('toast-container');
+  const id = Date.now();
+  const styles = { success:`background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)`, error:`background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)`, warn:`background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber)`, info:`background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue)` };
+  const icons  = { success:'check-circle', error:'alert-circle', warn:'alert-triangle', info:'info' };
+  const el = document.createElement('div');
+  el.id = `toast-${id}`;
+  el.className = 'px-4 py-3 rounded-xl flex items-center gap-2.5 toast-animate pointer-events-auto shadow-2xl';
+  el.style.cssText = styles[type]||styles.info;
+  el.innerHTML = `<i data-lucide="${icons[type]||'info'}" class="w-4 h-4 flex-shrink-0"></i><span style="font-size:12px;font-weight:600">${msg}</span><button onclick="this.parentElement.remove()" class="ml-2 opacity-60 hover:opacity-100"><i data-lucide="x" class="w-3 h-3"></i></button>`;
+  container.appendChild(el);
+  lucide.createIcons();
+  setTimeout(()=>{ const e=document.getElementById(`toast-${id}`); if(e){e.style.opacity='0';e.style.transform='translateY(8px)';setTimeout(()=>e.remove(),200);} }, 4000);
+}
+
+function showModal(title, content) {
+  document.getElementById('modal-content').innerHTML = `
+    <div class="px-5 py-4 flex justify-between items-center" style="border-bottom:1px solid var(--border)">
+      <h3 class="font-bold text-sm" style="color:var(--text)">${title}</h3>
+      <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-white/5"><i data-lucide="x" class="w-4 h-4" style="color:var(--muted)"></i></button>
+    </div>
+    <div class="p-5">${content}</div>`;
+  document.getElementById('modal-container').classList.remove('hide');
+  lucide.createIcons();
+}
+function closeModal() { document.getElementById('modal-container').classList.add('hide'); }
+
+function showConfirm(title, msg, onConfirm) {
+  document.getElementById('confirm-content').innerHTML = `
+    <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style="background:var(--red-bg);border:1px solid var(--red-border)">
+      <i data-lucide="alert-triangle" class="w-6 h-6" style="color:#ef4444"></i>
+    </div>
+    <h3 class="text-sm font-bold mb-2" style="color:var(--text)">${title}</h3>
+    <p class="text-xs mb-5" style="color:var(--muted)">${msg}</p>
+    <div class="flex gap-3">
+      <button onclick="closeConfirm()" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-white/5" style="border:1px solid var(--border);color:var(--muted)">Cancel</button>
+      <button id="confirm-btn" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-white hover:opacity-90" style="background:#ef4444">Confirm</button>
+    </div>`;
+  document.getElementById('confirm-btn').onclick = () => { onConfirm(); closeConfirm(); };
+  document.getElementById('confirm-container').classList.remove('hide');
+  lucide.createIcons();
+}
+function closeConfirm() { document.getElementById('confirm-container').classList.add('hide'); }
+
+// ─── ROUTER ─────────────────────────────────────────────────────────────────
+function renderPage() {
+  const c = document.getElementById('main-content');
+  c.innerHTML = '';
+  c.classList.remove('page-animate');
+  void c.offsetWidth;
+  c.classList.add('page-animate');
+  const routes = { dashboard:renderDashboard, submit:renderSubmit, all:renderAllRequests, church:()=>renderFilteredRequests('church'), water:()=>renderFilteredRequests('water'), complaints:()=>renderFilteredRequests('complaint'), reports:renderReports, settings:renderSettings };
+  (routes[activeNav]||renderDashboard)();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAGES
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ─── DASHBOARD ──────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const pending   = requests.filter(r=>r.status==='Pending').length;
+  const approved  = requests.filter(r=>r.status==='Approved').length;
+  const review    = requests.filter(r=>r.status==='Under Review').length;
+  const rejected  = requests.filter(r=>r.status==='Rejected').length;
+  const church    = requests.filter(r=>r.type==='church').length;
+  const water     = requests.filter(r=>r.type==='water').length;
+  const complaint = requests.filter(r=>r.type==='complaint').length;
+  const recent    = [...requests].slice(-5).reverse();
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold" style="color:var(--text)">Overview</h1>
+          <p class="text-xs mt-0.5" style="color:var(--muted)">Monday, March 23, 2026 · Olkaria Geothermal Complex</p>
+        </div>
+        <button onclick="navigateTo('submit')" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 accent-glow" style="background:var(--accent)">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> New Request
+        </button>
+      </div>
+
+      <!-- KPI row -->
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+        ${kpiCard('inbox','Total Requests',requests.length,'This month','#5D26AF')}
+        ${kpiCard('clock','Pending Review',pending,pending>5?'⚠ High':'Normal','#FA6400')}
+        ${kpiCard('check-circle','Approved',approved,'All time','#22c55e')}
+        ${kpiCard('x-circle','Rejected',rejected,'All time','#ef4444')}
+      </div>
+
+      <!-- Type breakdown + recent -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <!-- Type cards -->
+        <div class="xl:col-span-1 space-y-3">
+          <div class="rounded-2xl p-4" style="background:var(--surface);border:1px solid var(--border)">
+            <h3 class="text-xs font-bold mb-3" style="color:var(--text)">Request Types</h3>
+            ${[
+              ['church','Church / Community','#5D26AF',church,'church'],
+              ['droplets','Water (Maji)','#FA6400',water,'water'],
+              ['alert-triangle','Complaints','#ef4444',complaint,'complaint'],
+            ].map(([icon,label,color,count,type])=>`
+              <button onclick="navigateTo('${type==='complaint'?'complaints':type}')" class="w-full flex items-center gap-3 p-3 rounded-xl mb-2 transition-all hover:opacity-80" style="background:var(--surface2);border:1px solid var(--border)">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${color}18;border:1px solid ${color}30">
+                  <i data-lucide="${icon}" class="w-4 h-4" style="color:${color}"></i>
+                </div>
+                <div class="flex-1 text-left">
+                  <p class="text-xs font-bold" style="color:var(--text)">${label}</p>
+                  <p class="text-[9px]" style="color:var(--muted)">${count} total requests</p>
+                </div>
+                <span class="mono text-lg font-black" style="color:${color}">${count}</span>
+              </button>`).join('')}
+          </div>
+          <!-- Status summary -->
+          <div class="rounded-2xl p-4" style="background:var(--surface);border:1px solid var(--border)">
+            <h3 class="text-xs font-bold mb-3" style="color:var(--text)">Status Summary</h3>
+            ${[['Approved',approved,'#22c55e'],['Under Review',review,'#3b82f6'],['Pending',pending,'#f59e0b'],['Rejected',rejected,'#ef4444']].map(([s,n,c])=>`
+              <div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--border)">
+                <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" style="background:${c}"></div><span class="text-xs font-semibold" style="color:var(--muted)">${s}</span></div>
+                <span class="mono text-xs font-bold" style="color:${c}">${n}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Recent requests table -->
+        <div class="xl:col-span-2 rounded-2xl overflow-hidden" style="background:var(--surface);border:1px solid var(--border)">
+          <div class="px-5 py-4 flex items-center justify-between" style="border-bottom:1px solid var(--border)">
+            <h3 class="text-sm font-bold" style="color:var(--text)">Recent Requests</h3>
+            <button onclick="navigateTo('all')" class="text-xs font-bold hover:opacity-80" style="color:var(--accent)">View All →</button>
+          </div>
+          <div class="overflow-x-auto no-scrollbar">
+            <table class="w-full">
+              <thead><tr style="border-bottom:1px solid var(--border)">
+                ${['Applicant','Type','Details','Location','Status','Date'].map(h=>`<th class="px-4 py-3 text-left text-[9px] font-black uppercase tracking-widest" style="color:var(--muted)">${h}</th>`).join('')}
+              </tr></thead>
+              <tbody>
+                ${recent.map(r=>`
+                  <tr class="transition-colors hover:bg-white/[0.02]" style="border-bottom:1px solid var(--border)20">
+                    <td class="px-4 py-3 text-xs font-bold" style="color:var(--text)">${r.name}</td>
+                    <td class="px-4 py-3">${typeBadge(r.type)}</td>
+                    <td class="px-4 py-3 text-xs max-w-[140px] truncate" style="color:var(--muted)">${r.type==='church'?r.project:r.type==='water'?r.liters.toLocaleString()+' L':r.category}</td>
+                    <td class="px-4 py-3 text-xs" style="color:var(--muted)">${r.location}</td>
+                    <td class="px-4 py-3">${statusBadge(r.status)}</td>
+                    <td class="px-4 py-3 text-xs" style="color:var(--muted)">${r.date}</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  lucide.createIcons();
+}
+
+function kpiCard(icon, label, value, sub, color) {
+  return `<div class="rounded-2xl p-4 relative overflow-hidden" style="background:var(--surface);border:1px solid var(--border)">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full opacity-[0.06]" style="background:${color}"></div>
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style="background:${color}18;border:1px solid ${color}30">
+      <i data-lucide="${icon}" class="w-4 h-4" style="color:${color}"></i>
+    </div>
+    <p class="text-[9px] font-black uppercase tracking-widest mb-1" style="color:var(--muted)">${label}</p>
+    <h2 class="text-2xl font-black mono" style="color:var(--text)">${value}</h2>
+    <p class="text-[10px] mt-1" style="color:var(--muted)">${sub}</p>
+  </div>`;
+}
+
+// ─── SUBMIT REQUEST ─────────────────────────────────────────────────────────
+let selectedType = '';
+function renderSubmit() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-2xl mx-auto space-y-5">
+      <div>
+        <h1 class="text-xl font-bold" style="color:var(--text)">Submit New Request</h1>
+        <p class="text-xs mt-0.5" style="color:var(--muted)">Choose a request type and fill in the details below</p>
+      </div>
+
+      <!-- Type selector -->
+      <div class="rounded-2xl p-5" style="background:var(--surface);border:1px solid var(--border)">
+        <label class="block text-[9px] font-black uppercase tracking-widest mb-3" style="color:var(--muted)">Request Type</label>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          ${[
+            ['church','church','Church / Community','Project proposals, construction, community facilities','#5D26AF'],
+            ['droplets','water','Water Request (Maji)','Domestic or industrial water supply requests','#FA6400'],
+            ['alert-triangle','complaint','Complaint / Concern','Environmental, operational or social complaints','#ef4444'],
+          ].map(([icon,type,title,desc,color])=>`
+            <div class="type-card ${selectedType===type?'selected':''}" onclick="selectType('${type}')" id="type-${type}">
+              <div class="type-icon w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all" style="background:${color}18;border:1px solid ${color}30">
+                <i data-lucide="${icon}" class="w-5 h-5" style="color:${color}"></i>
+              </div>
+              <p class="text-xs font-bold mb-1" style="color:var(--text)">${title}</p>
+              <p class="text-[10px] leading-relaxed" style="color:var(--muted)">${desc}</p>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Dynamic form -->
+      <div id="request-form-area"></div>
+    </div>`;
+  lucide.createIcons();
+  if (selectedType) selectType(selectedType);
+}
+
+function selectType(type) {
+  selectedType = type;
+  // Update card visual
+  ['church','water','complaint'].forEach(t => {
+    const card = document.getElementById(`type-${t}`);
+    if (card) card.className = `type-card ${t===type?'selected':''}`;
+  });
+  renderRequestForm(type);
+}
+
+function renderRequestForm(type) {
+  const area = document.getElementById('request-form-area');
+  if (!area) return;
+  if (type === 'church') {
+    area.innerHTML = `
+      <div class="rounded-2xl p-5 space-y-4" style="background:var(--surface);border:1px solid var(--border)">
+        <h3 class="text-sm font-bold" style="color:var(--text)">Church / Community Project Details</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Date Received</label>
+            <input id="f-date" type="date" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Applicant Name</label>
+            <input id="f-name" type="text" placeholder="Pastor / Leader Name" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Instructions / Notes</label>
+          <textarea id="f-notes" rows="3" placeholder="Describe the instruction or special notes from the church/community…" class="w-full rounded-xl px-4 py-3 text-sm resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Project Proposed</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+            ${['Toilets in Schools','Church Building','Community Hall','Borehole / Water Point','Road / Bridge','Other'].map(p=>`
+              <button type="button" onclick="setProjectType(this,'${p}')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all hover:opacity-80 text-left" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted)">${p}</button>`).join('')}
+          </div>
+          <input id="f-project" type="text" placeholder="Or describe the project…" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Budget (KSh)</label>
+            <div style="position:relative;">
+              <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--muted);">KSh</span>
+              <input id="f-budget" type="number" placeholder="0" class="w-full rounded-xl px-4 py-2.5 text-sm" style="padding-left:44px;"/>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Location</label>
+            <input id="f-location" type="text" placeholder="Village, Sub-county, County" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+          </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button onclick="clearForm()" class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all hover:opacity-80" style="border:1px solid var(--border);color:var(--muted)">Clear</button>
+          <button onclick="submitRequest('church')" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 accent-glow" style="background:var(--accent)">
+            <i data-lucide="send" class="w-4 h-4"></i> Submit Request
+          </button>
+        </div>
+      </div>`;
+  } else if (type === 'water') {
+    area.innerHTML = `
+      <div class="rounded-2xl p-5 space-y-4" style="background:var(--surface);border:1px solid var(--border)">
+        <h3 class="text-sm font-bold" style="color:var(--text)">Water Request — Ombi la Maji</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Date Received</label>
+            <input id="f-date" type="date" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Applicant Name</label>
+            <input id="f-name" type="text" placeholder="Full name of applicant" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Amount of Liters Requested</label>
+            <div style="position:relative;">
+              <input id="f-liters" type="number" placeholder="e.g. 5000" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--muted);">L</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Means of Transport</label>
+            <select id="f-transport" class="w-full rounded-xl px-4 py-2.5 text-sm">
+              <option value="">Select transport method…</option>
+              <option>Water Truck (KenGen)</option>
+              <option>Private Water Truck</option>
+              <option>Donkey Cart</option>
+              <option>Pipeline Connection</option>
+              <option>Manual / Jerricans</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Location / Destination</label>
+          <input id="f-location" type="text" placeholder="Village, Sub-county, County" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Purpose / Notes</label>
+          <textarea id="f-notes" rows="3" placeholder="Domestic use, emergency (drought), industrial cooling, farming…" class="w-full rounded-xl px-4 py-3 text-sm resize-none"></textarea>
+        </div>
+        <!-- Estimate box -->
+        <div class="rounded-xl p-3 flex items-center gap-3" style="background:var(--surface2);border:1px solid var(--border)">
+          <i data-lucide="info" class="w-4 h-4 flex-shrink-0" style="color:var(--accent)"></i>
+          <p class="text-[10px]" style="color:var(--muted)">Standard allocation: up to <strong style="color:var(--text)">10,000 L</strong> per household request. Larger volumes require departmental approval.</p>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button onclick="clearForm()" class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all hover:opacity-80" style="border:1px solid var(--border);color:var(--muted)">Clear</button>
+          <button onclick="submitRequest('water')" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 accent-glow" style="background:var(--accent)">
+            <i data-lucide="send" class="w-4 h-4"></i> Submit Request
+          </button>
+        </div>
+      </div>`;
+  } else if (type === 'complaint') {
+    area.innerHTML = `
+      <div class="rounded-2xl p-5 space-y-4" style="background:var(--surface);border:1px solid var(--border)">
+        <h3 class="text-sm font-bold" style="color:var(--text)">Complaint / Concern</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Date Received</label>
+            <input id="f-date" type="date" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+          </div>
+          <div>
+            <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Complainant Name</label>
+            <input id="f-name" type="text" placeholder="Full name" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Category</label>
+          <select id="f-category" class="w-full rounded-xl px-4 py-2.5 text-sm">
+            <option value="">Select category…</option>
+            <option>Noise Pollution</option>
+            <option>Environmental Damage</option>
+            <option>Water Contamination</option>
+            <option>Air / Gas Emissions</option>
+            <option>Land / Property Dispute</option>
+            <option>Safety Hazard</option>
+            <option>Social / Community Issue</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Location of Incident</label>
+          <input id="f-location" type="text" placeholder="Village, Sub-county, County" class="w-full rounded-xl px-4 py-2.5 text-sm"/>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Description</label>
+          <textarea id="f-description" rows="4" placeholder="Describe the complaint or concern in detail. Include dates, times, and any evidence you have…" class="w-full rounded-xl px-4 py-3 text-sm resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Urgency Level</label>
+          <div class="grid grid-cols-3 gap-2">
+            ${[['Low','#22c55e'],['Medium','#f59e0b'],['High','#ef4444']].map(([u,c])=>`
+              <button type="button" onclick="setUrgency(this,'${u}')" class="px-3 py-2 rounded-xl text-xs font-bold transition-all hover:opacity-80" style="background:${c}18;border:2px solid ${c}30;color:${c}">${u}</button>`).join('')}
+          </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button onclick="clearForm()" class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all hover:opacity-80" style="border:1px solid var(--border);color:var(--muted)">Clear</button>
+          <button onclick="submitRequest('complaint')" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 accent-glow" style="background:var(--accent)">
+            <i data-lucide="send" class="w-4 h-4"></i> Submit Complaint
+          </button>
+        </div>
+      </div>`;
+  }
+  lucide.createIcons();
+}
+
+let selectedProject = '';
+let selectedUrgency = 'Medium';
+
+function setProjectType(btn, project) {
+  selectedProject = project;
+  const btns = btn.parentElement.querySelectorAll('button');
+  btns.forEach(b => { b.style.borderColor='var(--border)'; b.style.color='var(--muted)'; b.style.background='var(--surface2)'; });
+  btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)'; btn.style.background='var(--accent-dim)';
+  const inp = document.getElementById('f-project');
+  if (inp && project !== 'Other') inp.value = project;
+}
+
+function setUrgency(btn, urgency) {
+  selectedUrgency = urgency;
+  const colors = { Low:'#22c55e', Medium:'#f59e0b', High:'#ef4444' };
+  const btns = btn.parentElement.querySelectorAll('button');
+  btns.forEach(b => {
+    const u = b.textContent.trim();
+    const c = colors[u] || 'var(--muted)';
+    b.style.borderWidth='2px'; b.style.borderColor=`${c}30`; b.style.background=`${c}18`;
+  });
+  const c = colors[urgency];
+  btn.style.borderColor=c; btn.style.background=`${c}30`;
+}
+
+function clearForm() {
+  ['f-date','f-name','f-notes','f-project','f-budget','f-location','f-liters','f-transport','f-category','f-description'].forEach(id=>{
+    const el=document.getElementById(id); if(el){el.value='';}
+  });
+}
+
+function submitRequest(type) {
+  const name = document.getElementById('f-name')?.value.trim();
+  const date = document.getElementById('f-date')?.value;
+  const location = document.getElementById('f-location')?.value.trim();
+  if (!name) { toast('Applicant name is required','error'); return; }
+  if (!location) { toast('Location is required','error'); return; }
+
+  let newReq = { id:nextId++, type, name, date:date||new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), location, status:'Pending', notes:document.getElementById('f-notes')?.value.trim()||'' };
+
+  if (type==='church') {
+    const project = document.getElementById('f-project')?.value.trim();
+    const budget  = document.getElementById('f-budget')?.value;
+    if (!project) { toast('Project description is required','error'); return; }
+    newReq = { ...newReq, project, budget:budget?Number(budget):0 };
+  } else if (type==='water') {
+    const liters    = document.getElementById('f-liters')?.value;
+    const transport = document.getElementById('f-transport')?.value;
+    if (!liters || !transport) { toast('Liters and transport are required','error'); return; }
+    newReq = { ...newReq, liters:Number(liters), transport };
+  } else if (type==='complaint') {
+    const category    = document.getElementById('f-category')?.value;
+    const description = document.getElementById('f-description')?.value.trim();
+    if (!category) { toast('Please select a category','error'); return; }
+    if (!description) { toast('Please describe the complaint','error'); return; }
+    newReq = { ...newReq, category, description, urgency:selectedUrgency };
+  }
+
+  requests.unshift(newReq);
+  document.getElementById('pending-badge').innerText = requests.filter(r=>r.status==='Pending').length;
+  toast('✅ Request submitted successfully!','success');
+  selectedType = '';
+  setTimeout(()=>navigateTo('all'), 1000);
+}
+
+// ─── ALL REQUESTS ────────────────────────────────────────────────────────────
+function renderAllRequests() {
+  renderFilteredRequests('all');
+}
+
+function renderFilteredRequests(typeFilter) {
+  const pageTitle = { all:'All Requests', church:'Church / Community Requests', water:'Water Requests (Maji)', complaint:'Complaints' };
+  const filtered = typeFilter==='all' ? requests : requests.filter(r=>r.type===typeFilter);
+  const statusFiltered = filterStatus==='all' ? filtered : filtered.filter(r=>r.status===filterStatus);
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="space-y-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold" style="color:var(--text)">${pageTitle[typeFilter]||'Requests'}</h1>
+          <p class="text-xs mt-0.5" style="color:var(--muted)">${filtered.length} total requests</p>
+        </div>
+        <button onclick="navigateTo('submit')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white hover:opacity-90 transition" style="background:var(--accent)">
+          <i data-lucide="plus" class="w-4 h-4"></i> New Request
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-2 items-center">
+        <div class="relative">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style="color:var(--muted)"></i>
+          <input type="text" id="req-search" oninput="searchRequests(this.value,'${typeFilter}')" placeholder="Search name, location…" class="rounded-xl pl-9 pr-4 py-2 text-xs" style="width:220px"/>
+        </div>
+        <select id="status-filter" onchange="filterStatus=this.value;renderFilteredRequests('${typeFilter}')" class="text-xs rounded-xl px-3 py-2">
+          <option value="all">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Under Review">Under Review</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+        ${typeFilter==='all'?`
+        <select onchange="filterRequests(this.value)" class="text-xs rounded-xl px-3 py-2">
+          <option value="all">All Types</option>
+          <option value="church">Church / Community</option>
+          <option value="water">Water (Maji)</option>
+          <option value="complaint">Complaints</option>
+        </select>`:''}
+        <button onclick="exportCSV('${typeFilter}')" class="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition hover:opacity-80" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted)">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV
+        </button>
+      </div>
+
+      <div class="rounded-2xl overflow-hidden" style="background:var(--surface);border:1px solid var(--border)">
+        <div class="overflow-x-auto no-scrollbar">
+          <table class="w-full">
+            <thead><tr style="border-bottom:1px solid var(--border)">
+              ${['#','Date','Applicant','Type','Details','Location','Status','Actions'].map(h=>`<th class="px-4 py-3 text-left text-[9px] font-black uppercase tracking-widest" style="color:var(--muted)">${h}</th>`).join('')}
+            </tr></thead>
+            <tbody id="req-tbody">${renderRequestRows(statusFiltered)}</tbody>
+          </table>
+          ${statusFiltered.length===0?`<div class="py-12 text-center text-xs" style="color:var(--muted)">No requests found</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  lucide.createIcons();
+}
+
+function renderRequestRows(list) {
+  return list.map(r=>`
+    <tr class="transition-colors hover:bg-white/[0.02] group" style="border-bottom:1px solid var(--border)20">
+      <td class="px-4 py-3 mono text-xs" style="color:var(--muted)">#${String(r.id).padStart(3,'0')}</td>
+      <td class="px-4 py-3 text-xs" style="color:var(--muted)">${r.date}</td>
+      <td class="px-4 py-3 text-xs font-bold" style="color:var(--text)">${r.name}</td>
+      <td class="px-4 py-3">${typeBadge(r.type)}</td>
+      <td class="px-4 py-3 text-xs max-w-[160px] truncate" style="color:var(--muted)">
+        ${r.type==='church'?`<span title="${r.project}">${r.project}${r.budget?` · ${fmtBudget(r.budget)}`:''}</span>`:
+          r.type==='water'?`${r.liters?.toLocaleString()} L · ${r.transport}`:
+          `${r.category}${r.urgency?` · ${r.urgency}`:''}`}
+      </td>
+      <td class="px-4 py-3 text-xs" style="color:var(--muted)">${r.location}</td>
+      <td class="px-4 py-3">${statusBadge(r.status)}</td>
+      <td class="px-4 py-3">
+        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="viewRequest(${r.id})" class="p-1.5 rounded-lg hover:bg-white/5" title="View"><i data-lucide="eye" class="w-3.5 h-3.5" style="color:var(--accent)"></i></button>
+          <button onclick="updateStatusModal(${r.id})" class="p-1.5 rounded-lg hover:bg-white/5" title="Update Status"><i data-lucide="edit-3" class="w-3.5 h-3.5" style="color:var(--blue)"></i></button>
+          <button onclick="deleteRequest(${r.id})" class="p-1.5 rounded-lg hover:bg-white/5" title="Delete"><i data-lucide="trash-2" class="w-3.5 h-3.5" style="color:#ef4444"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function searchRequests(q, typeFilter) {
+  const ql = q.toLowerCase();
+  const base = typeFilter==='all' ? requests : requests.filter(r=>r.type===typeFilter);
+  const filtered = base.filter(r=>
+    r.name.toLowerCase().includes(ql) ||
+    r.location.toLowerCase().includes(ql) ||
+    (r.project||'').toLowerCase().includes(ql) ||
+    (r.category||'').toLowerCase().includes(ql)
+  );
+  const tbody = document.getElementById('req-tbody');
+  if (tbody) { tbody.innerHTML = renderRequestRows(filtered); lucide.createIcons(); }
+}
+
+function filterRequests(type) {
+  if (type==='all') navigateTo('all');
+  else navigateTo(type==='complaint'?'complaints':type);
+}
+
+function viewRequest(id) {
+  const r = requests.find(x=>x.id===id); if(!r) return;
+  const fields = r.type==='church' ? [
+    ['Project', r.project],
+    ['Budget', fmtBudget(r.budget)],
+    ['Notes', r.notes||'—'],
+  ] : r.type==='water' ? [
+    ['Liters Requested', `${r.liters?.toLocaleString()} L`],
+    ['Transport', r.transport],
+    ['Notes', r.notes||'—'],
+  ] : [
+    ['Category', r.category],
+    ['Urgency', r.urgency||'—'],
+    ['Description', r.description||'—'],
+  ];
+  showModal(`Request #${String(r.id).padStart(3,'0')} — ${r.name}`, `
+    <div class="space-y-3">
+      <div class="flex items-center gap-3 mb-4">
+        ${typeBadge(r.type)} ${statusBadge(r.status)}
+        <span class="text-xs ml-auto" style="color:var(--muted)">${r.date}</span>
+      </div>
+      ${[['Applicant',r.name],['Location',r.location],...fields].map(([k,v])=>`
+        <div class="flex gap-4 py-2" style="border-bottom:1px solid var(--border)">
+          <span class="text-[9px] font-black uppercase tracking-widest w-28 flex-shrink-0 pt-0.5" style="color:var(--muted)">${k}</span>
+          <span class="text-xs" style="color:var(--text)">${v}</span>
+        </div>`).join('')}
+      <div class="flex gap-3 pt-3">
+        <button onclick="updateStatusModal(${r.id})" class="flex-1 py-2 rounded-xl text-xs font-bold text-white hover:opacity-90" style="background:var(--accent)">Update Status</button>
+        <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs font-bold hover:opacity-80" style="border:1px solid var(--border);color:var(--muted)">Close</button>
+      </div>
+    </div>`);
+}
+
+function updateStatusModal(id) {
+  const r = requests.find(x=>x.id===id); if(!r) return;
+  closeModal();
+  setTimeout(()=>{
+    showModal('Update Status', `
+      <div class="space-y-3">
+        <p class="text-xs font-bold" style="color:var(--text)">Request: ${r.name}</p>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">New Status</label>
+          <select id="new-status" class="w-full rounded-xl px-4 py-2.5 text-sm">
+            ${['Pending','Under Review','Approved','Rejected'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Officer Notes</label>
+          <textarea id="officer-notes" rows="3" placeholder="Add notes about this status change…" class="w-full rounded-xl px-4 py-3 text-sm resize-none"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button onclick="closeModal()" class="flex-1 py-2.5 rounded-xl text-xs font-bold hover:opacity-80" style="border:1px solid var(--border);color:var(--muted)">Cancel</button>
+          <button onclick="saveStatus(${id})" class="flex-1 py-2.5 rounded-xl text-xs font-bold text-white hover:opacity-90" style="background:var(--accent)">Save</button>
+        </div>
+      </div>`);
+  }, 150);
+}
+
+function saveStatus(id) {
+  const newStatus = document.getElementById('new-status')?.value;
+  const idx = requests.findIndex(x=>x.id===id);
+  if (idx !== -1) {
+    requests[idx].status = newStatus;
+    document.getElementById('pending-badge').innerText = requests.filter(r=>r.status==='Pending').length;
+    closeModal();
+    toast(`Status updated to "${newStatus}"`, newStatus==='Approved'?'success':newStatus==='Rejected'?'error':'info');
+    renderPage();
+  }
+}
+
+function deleteRequest(id) {
+  const r = requests.find(x=>x.id===id);
+  showConfirm('Delete Request', `Remove request from ${r?.name}?`, ()=>{
+    requests = requests.filter(x=>x.id!==id);
+    toast('Request deleted','warn');
+    renderPage();
+  });
+}
+
+function exportCSV(typeFilter) {
+  const data = typeFilter==='all' ? requests : requests.filter(r=>r.type===typeFilter);
+  const headers = ['ID','Date','Name','Type','Location','Status','Details'];
+  const rows = data.map(r=>[
+    `#${String(r.id).padStart(3,'0')}`, r.date, r.name, r.type, r.location, r.status,
+    r.type==='church'?`${r.project} / KSh ${r.budget}`:r.type==='water'?`${r.liters}L / ${r.transport}`:r.category
+  ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','),...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kengen-requests-${typeFilter}.csv`;
+  a.click();
+  toast('Exported!','success');
+}
+
+// ─── REPORTS ────────────────────────────────────────────────────────────────
+function renderReports() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="space-y-5">
+      <div>
+        <h1 class="text-xl font-bold" style="color:var(--text)">Reports & Analytics</h1>
+        <p class="text-xs mt-0.5" style="color:var(--muted)">Request trends and performance metrics</p>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="rounded-2xl p-5" style="background:var(--surface);border:1px solid var(--border)">
+          <h3 class="text-sm font-bold mb-4" style="color:var(--text)">Monthly Request Volume</h3>
+          <div id="monthly-chart" class="h-[260px]"></div>
+        </div>
+        <div class="rounded-2xl p-5" style="background:var(--surface);border:1px solid var(--border)">
+          <h3 class="text-sm font-bold mb-4" style="color:var(--text)">Requests by Type</h3>
+          <div id="type-donut" class="h-[260px]"></div>
+        </div>
+      </div>
+      <div class="rounded-2xl p-5" style="background:var(--surface);border:1px solid var(--border)">
+        <h3 class="text-sm font-bold mb-4" style="color:var(--text)">Requests by Status</h3>
+        <div id="status-chart" class="h-[200px]"></div>
+      </div>
+    </div>`;
+  lucide.createIcons();
+
+  const mutedCol = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim()||'#4d7057';
+  const textCol  = getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#e2ede4';
+  const gridCol  = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim()||'#1a2b1e';
+  const mode     = getComputedStyle(document.documentElement).getPropertyValue('--chart-theme').trim()||'dark';
+  const base = { chart:{toolbar:{show:false},background:'transparent'}, theme:{mode}, grid:{borderColor:gridCol,strokeDashArray:3} };
+
+  new ApexCharts(document.getElementById('monthly-chart'), {
+    ...base, series:[{name:'Requests',data:[12,18,9,23,15,28,22,31,19,35,28,47]}],
+    chart:{...base.chart,type:'area',height:260},
+    colors:['#5D26AF'], stroke:{curve:'smooth',width:3},
+    fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.3,opacityTo:0}},
+    dataLabels:{enabled:false},
+    xaxis:{categories:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],labels:{style:{colors:mutedCol,fontWeight:700,fontFamily:'Sora',fontSize:'10px'}}},
+    yaxis:{labels:{style:{colors:mutedCol,fontWeight:700,fontFamily:'Sora',fontSize:'10px'}}},
+  }).render();
+
+  const church = requests.filter(r=>r.type==='church').length;
+  const water  = requests.filter(r=>r.type==='water').length;
+  const compl  = requests.filter(r=>r.type==='complaint').length;
+  new ApexCharts(document.getElementById('type-donut'), {
+    ...base, series:[church, water, compl],
+    chart:{...base.chart,type:'donut',height:260},
+    colors:['#7c3aed','#0891b2','#ef4444'],
+    labels:['Church/Community','Water (Maji)','Complaints'],
+    legend:{labels:{colors:[textCol]},fontFamily:'Sora',fontWeight:600,fontSize:'11px'},
+    stroke:{width:0}, dataLabels:{enabled:false},
+    plotOptions:{pie:{donut:{size:'65%',labels:{show:true,name:{show:false},value:{show:true,fontSize:'20px',fontWeight:800,color:textCol,fontFamily:'Space Mono'},total:{show:true,formatter:()=>requests.length+'',color:textCol,fontFamily:'Space Mono',fontSize:'18px',fontWeight:800}}}}},
+  }).render();
+
+  new ApexCharts(document.getElementById('status-chart'), {
+    ...base, series:[{name:'Requests',data:[
+      requests.filter(r=>r.status==='Approved').length,
+      requests.filter(r=>r.status==='Pending').length,
+      requests.filter(r=>r.status==='Under Review').length,
+      requests.filter(r=>r.status==='Rejected').length,
+    ]}],
+    chart:{...base.chart,type:'bar',height:200},
+    colors:['#22c55e','#f59e0b','#3b82f6','#ef4444'],
+    plotOptions:{bar:{distributed:true,borderRadius:8,columnWidth:'50%',borderRadiusApplication:'end'}},
+    xaxis:{categories:['Approved','Pending','Under Review','Rejected'],labels:{style:{colors:mutedCol,fontWeight:700,fontFamily:'Sora',fontSize:'11px'}}},
+    yaxis:{labels:{style:{colors:mutedCol,fontWeight:700,fontFamily:'Sora',fontSize:'11px'}}},
+    legend:{show:false}, dataLabels:{enabled:false},
+  }).render();
+}
+
+// ─── SETTINGS ───────────────────────────────────────────────────────────────
+function renderSettings() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="space-y-5 max-w-2xl">
+      <h1 class="text-xl font-bold" style="color:var(--text)">Settings</h1>
+      <div class="rounded-2xl p-5 space-y-4" style="background:var(--surface);border:1px solid var(--border)">
+        <h3 class="text-sm font-bold" style="color:var(--text)">Officer Profile</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">First Name</label>
+            <input type="text" value="James" class="w-full rounded-xl px-4 py-2.5 text-sm"/></div>
+          <div><label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Last Name</label>
+            <input type="text" value="Mwangi" class="w-full rounded-xl px-4 py-2.5 text-sm"/></div>
+        </div>
+        <div><label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Email</label>
+          <input type="email" value="j.mwangi@kengen.co.ke" class="w-full rounded-xl px-4 py-2.5 text-sm"/></div>
+        <div><label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Department</label>
+          <select class="w-full rounded-xl px-4 py-2.5 text-sm">
+            <option selected>Community Affairs</option>
+            <option>Environmental Affairs</option>
+            <option>Corporate Social Responsibility</option>
+            <option>Operations</option>
+          </select>
+        </div>
+        <div><label class="block text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--muted)">Station</label>
+          <select class="w-full rounded-xl px-4 py-2.5 text-sm">
+            <option selected>Olkaria, Naivasha</option>
+            <option>Menengai, Nakuru</option>
+            <option>Eburru, Nakuru</option>
+            <option>Suswa, Narok</option>
+            <option>Longonot, Nakuru</option>
+          </select>
+        </div>
+      </div>
+      <div class="rounded-2xl p-5 space-y-4" style="background:var(--surface);border:1px solid var(--border)">
+        <h3 class="text-sm font-bold" style="color:var(--text)">Notifications</h3>
+        ${[['New request submitted','Send me an email when a new request is logged',true],['Status updated','Notify when request status changes',true],['Weekly report','Send weekly summary report',false]].map(([t,d,on])=>`
+          <div class="flex items-center justify-between py-2" style="border-bottom:1px solid var(--border)">
+            <div><p class="text-xs font-bold" style="color:var(--text)">${t}</p><p class="text-[9px]" style="color:var(--muted)">${d}</p></div>
+            <div class="w-9 h-5 rounded-full relative" style="background:${on?'var(--accent)':'var(--border)'}">
+              <div class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm" style="${on?'right:2px':'left:2px'}"></div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="flex justify-end">
+        <button onclick="toast('Settings saved','success')" class="px-5 py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90 accent-glow" style="background:var(--accent)">Save Changes</button>
+      </div>
+    </div>`;
+  lucide.createIcons();
+}
+
+// ─── THEME ──────────────────────────────────────────────────────────────────
+let currentTheme = localStorage.getItem('kgTheme') || 'dark';
+document.documentElement.setAttribute('data-theme', currentTheme);
+
+function toggleTheme() {
+  currentTheme = currentTheme==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  localStorage.setItem('kgTheme', currentTheme);
+  const sun  = document.getElementById('icon-sun');
+  const moon = document.getElementById('icon-moon');
+  if (currentTheme==='light') { sun.classList.remove('hide'); moon.classList.add('hide'); }
+  else { sun.classList.add('hide'); moon.classList.remove('hide'); }
+  if (['dashboard','reports'].includes(activeNav)) renderPage();
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.onload = () => {
+  const sun  = document.getElementById('icon-sun');
+  const moon = document.getElementById('icon-moon');
+  if (currentTheme==='light') { sun.classList.remove('hide'); moon.classList.add('hide'); }
+  renderNav();
+  renderPage();
+  document.getElementById('pending-badge').innerText = requests.filter(r=>r.status==='Pending').length;
+  lucide.createIcons();
+};
+</script>
+</body>
+</html>

